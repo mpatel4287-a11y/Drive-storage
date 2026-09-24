@@ -50,6 +50,7 @@ cors_allowed_origins = settings.cors_origins
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_allowed_origins if cors_allowed_origins != ["*"] else ["*"],
+    allow_origin_regex=r"https?://.*\.trycloudflare\.com",
     allow_credentials=True if cors_allowed_origins != ["*"] else False,
     allow_methods=["*"],
     allow_headers=["*"],

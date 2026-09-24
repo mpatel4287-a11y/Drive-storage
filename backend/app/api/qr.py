@@ -136,6 +136,7 @@ def validate_qr_token(token: str, db: Session) -> tuple[QrUploadSession, User]:
 
 @router.post("/session", response_model=QrSessionResponse)
 def create_qr_session(
+    request: Request,
     data: CreateQrSessionRequest = CreateQrSessionRequest(),
     db: Session = Depends(get_db),
     current_user: User = Depends(require_permission("can_upload")),
@@ -155,8 +156,15 @@ def create_qr_session(
     db.commit()
     db.refresh(session)
 
-    # QR URL for mobile browser
-    qr_url = f"{settings.frontend_url}/qr-upload?token={token}"
+    # QR URL for mobile browser (auto-detects public tunnel or falls back to settings.frontend_url)
+    forwarded_host = request.headers.get("x-forwarded-host") or request.headers.get("host")
+    forwarded_proto = request.headers.get("x-forwarded-proto", "http")
+    if forwarded_host and "trycloudflare.com" in forwarded_host:
+        qr_url = f"https://{forwarded_host}/qr-upload?token={token}"
+    elif forwarded_host:
+        qr_url = f"{forwarded_proto}://{forwarded_host}/qr-upload?token={token}"
+    else:
+        qr_url = f"{settings.frontend_url}/qr-upload?token={token}"
 
     # Generate standalone SVG QR code
     factory = qrcode.image.svg.SvgImage
@@ -181,10 +189,18 @@ def create_qr_session(
 @router.get("/{token}/code")
 def get_qr_image(
     token: str,
+    request: Request,
     db: Session = Depends(get_db),
 ):
     qr_session, _ = validate_qr_token(token, db)
-    qr_url = f"{settings.frontend_url}/qr-upload?token={qr_session.token}"
+    forwarded_host = request.headers.get("x-forwarded-host") or request.headers.get("host")
+    forwarded_proto = request.headers.get("x-forwarded-proto", "http")
+    if forwarded_host and "trycloudflare.com" in forwarded_host:
+        qr_url = f"https://{forwarded_host}/qr-upload?token={qr_session.token}"
+    elif forwarded_host:
+        qr_url = f"{forwarded_proto}://{forwarded_host}/qr-upload?token={qr_session.token}"
+    else:
+        qr_url = f"{settings.frontend_url}/qr-upload?token={qr_session.token}"
 
     factory = qrcode.image.svg.SvgImage
     qr_img = qrcode.make(qr_url, image_factory=factory)
