@@ -3,7 +3,7 @@ import io
 import os
 import secrets
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from pydantic import BaseModel, Field
 import qrcode
 import qrcode.image.svg
