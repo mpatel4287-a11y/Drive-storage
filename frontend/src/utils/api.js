@@ -1,4 +1,8 @@
-export const API_BASE = import.meta.env.VITE_API_URL || "";
+let rawApiBase = import.meta.env.VITE_API_URL || "";
+if (rawApiBase && !rawApiBase.startsWith("http://") && !rawApiBase.startsWith("https://")) {
+  rawApiBase = `https://${rawApiBase}`;
+}
+export const API_BASE = rawApiBase;
 
 export const getAuthToken = () => localStorage.getItem("csp_token");
 export const setAuthToken = (token) => localStorage.setItem("csp_token", token);
