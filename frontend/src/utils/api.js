@@ -1,4 +1,4 @@
-export const API_BASE = "";
+export const API_BASE = import.meta.env.VITE_API_URL || "";
 
 export const getAuthToken = () => localStorage.getItem("csp_token");
 export const setAuthToken = (token) => localStorage.setItem("csp_token", token);
@@ -219,5 +219,3 @@ export const folderApi = {
       }),
     }),
 };
-
-export { API_BASE };

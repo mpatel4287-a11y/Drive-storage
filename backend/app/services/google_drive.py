@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 
 from fastapi import HTTPException
@@ -29,16 +30,27 @@ DRIVE_API_BASE = "https://www.googleapis.com/drive/v3"
 # =========================================================
 
 def create_google_flow() -> Flow:
-    if not CLIENT_SECRET_FILE.exists():
-        raise FileNotFoundError(
-            f"Google OAuth client secret not found: {CLIENT_SECRET_FILE}"
+    google_secret_env = os.getenv("GOOGLE_CLIENT_SECRET_JSON")
+    if google_secret_env:
+        try:
+            client_config = json.loads(google_secret_env)
+        except Exception as e:
+            raise ValueError(f"Invalid GOOGLE_CLIENT_SECRET_JSON environment variable: {e}")
+        flow = Flow.from_client_config(
+            client_config,
+            scopes=SCOPES,
+            autogenerate_code_verifier=True,
         )
-
-    flow = Flow.from_client_secrets_file(
-        str(CLIENT_SECRET_FILE),
-        scopes=SCOPES,
-        autogenerate_code_verifier=True,
-    )
+    elif CLIENT_SECRET_FILE.exists():
+        flow = Flow.from_client_secrets_file(
+            str(CLIENT_SECRET_FILE),
+            scopes=SCOPES,
+            autogenerate_code_verifier=True,
+        )
+    else:
+        raise FileNotFoundError(
+            f"Google OAuth client secret not found at {CLIENT_SECRET_FILE} or in GOOGLE_CLIENT_SECRET_JSON env."
+        )
 
     flow.redirect_uri = REDIRECT_URI
 
@@ -113,25 +125,37 @@ def exchange_google_code(
 
 
 def get_google_credentials() -> Credentials:
-
-    if not TOKEN_FILE.exists():
+    token_json_env = os.getenv("GOOGLE_TOKEN_JSON")
+    if token_json_env:
+        try:
+            info = json.loads(token_json_env)
+            credentials = Credentials.from_authorized_user_info(info, SCOPES)
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Invalid GOOGLE_TOKEN_JSON environment variable: {e}",
+            )
+    elif TOKEN_FILE.exists():
+        credentials = Credentials.from_authorized_user_file(
+            str(TOKEN_FILE),
+            SCOPES,
+        )
+    else:
         raise HTTPException(
             status_code=401,
             detail="Google Drive is not connected yet.",
         )
 
-    credentials = Credentials.from_authorized_user_file(
-        str(TOKEN_FILE),
-        SCOPES,
-    )
-
     if credentials.expired and credentials.refresh_token:
         credentials.refresh(Request())
-
-        TOKEN_FILE.write_text(
-            credentials.to_json(),
-            encoding="utf-8",
-        )
+        if TOKEN_FILE.parent.exists():
+            try:
+                TOKEN_FILE.write_text(
+                    credentials.to_json(),
+                    encoding="utf-8",
+                )
+            except Exception:
+                pass
 
     if not credentials.valid:
         raise HTTPException(

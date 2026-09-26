@@ -94,3 +94,27 @@ PYTHONPATH=. .venv/bin/python -m app.services.maintenance
 cd backend
 PYTHONPATH=. .venv/bin/pytest tests/ -v
 ```
+
+---
+
+## 24/7 Cloud Deployment on Render
+
+This project includes a native `render.yaml` blueprint for one-click deployment on [Render](https://render.com).
+
+### Step 1: Connect to Render
+1. Go to [Render Dashboard](https://dashboard.render.com).
+2. Click **New +** -> **Blueprint**.
+3. Select your GitHub repository: `Drive-storage`.
+4. Render will automatically detect `render.yaml` and configure:
+   - **Backend Web Service** (`drive-storage-api`)
+   - **Frontend Static Site** (`drive-storage-portal`)
+
+### Step 2: Configure Environment Variables
+In the Render dashboard for `drive-storage-api`, fill in:
+- `DATABASE_URL`: Your cloud PostgreSQL URL (e.g. from Supabase or Neon).
+- `GOOGLE_TOKEN_JSON`: The contents of your `token.json` file.
+- `GOOGLE_CLIENT_SECRET_JSON`: The contents of your `google_client_secret.json` file.
+- `SMTP_USERNAME` / `SMTP_PASSWORD` / `SMTP_FROM_EMAIL`: Your email credentials for password resets.
+
+### Step 3: Deploy
+Click **Apply**. Render will automatically build the backend, apply Alembic database migrations, build the frontend, and give you 24/7 online public HTTPS URLs.
