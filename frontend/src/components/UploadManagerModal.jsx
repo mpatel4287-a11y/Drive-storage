@@ -105,12 +105,12 @@ export default function UploadManagerModal({ isOpen, onClose, onUploadFinished, 
         <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <div className="p-2 bg-brand-600/20 text-brand-400 rounded-lg">
-              <Zap className="w-5 h-5 text-amber-400" />
+              <Upload className="w-5 h-5 text-brand-400" />
             </div>
             <div>
-              <h3 className="font-semibold text-white">Turbo 6-Stream Media Uploader</h3>
+              <h3 className="font-semibold text-white">Media Uploader</h3>
               <p className="text-xs text-slate-400">
-                Multi-stream parallel pipeline (100% original quality preserved)
+                100% original quality preserved
               </p>
             </div>
           </div>
@@ -133,6 +133,7 @@ export default function UploadManagerModal({ isOpen, onClose, onUploadFinished, 
             <input
               type="file"
               multiple
+              accept="image/*,video/*"
               ref={fileInputRef}
               onChange={(e) => handleFilesSelected(e.target.files)}
               className="hidden"
@@ -142,7 +143,7 @@ export default function UploadManagerModal({ isOpen, onClose, onUploadFinished, 
               Drag and drop original 4K videos or photos here
             </p>
             <p className="text-xs text-slate-500 mt-1">
-              Turbo 6-stream parallel uplink for large files • Resumable chunking
+              High-speed direct uploads • Resumable chunking
             </p>
             <div className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
               <ShieldCheck className="w-3.5 h-3.5" /> Zero Compression • Exact Binary
@@ -203,22 +204,6 @@ export default function UploadManagerModal({ isOpen, onClose, onUploadFinished, 
                       />
                     </div>
 
-                    {/* 6-Stream Active Uplink Indicators */}
-                    {item.streams?.length > 1 && item.status === "uploading" && (
-                      <div className="pt-1">
-                        <div className="grid grid-cols-6 gap-1">
-                          {item.streams.map((s) => (
-                            <div key={s.streamIndex} className="bg-slate-900 p-1 rounded border border-slate-800 text-center">
-                              <div className="w-full bg-slate-800 h-1 rounded-full overflow-hidden mb-0.5">
-                                <div className="h-full bg-amber-400" style={{ width: `${s.percent}%` }} />
-                              </div>
-                              <span className="text-[8px] font-mono text-slate-400">UP{s.streamIndex}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
                     <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono">
                       <span>
                         {item.status === "completed" ? (
@@ -231,7 +216,7 @@ export default function UploadManagerModal({ isOpen, onClose, onUploadFinished, 
                           </span>
                         ) : item.status === "error" ? (
                           <span className="text-rose-400 flex items-center gap-1">
-                            <AlertCircle className="w-3 h-3" /> Failed
+                            <AlertCircle className="w-3 h-3 flex-shrink-0" /> {item.error || "Upload failed"}
                           </span>
                         ) : (
                           "Ready in queue"

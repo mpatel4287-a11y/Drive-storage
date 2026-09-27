@@ -256,10 +256,10 @@ export default function MediaGallery({
                         <button
                           onClick={() => handleTurboDownload(file)}
                           className="flex items-center space-x-1 bg-brand-600/10 hover:bg-brand-600 text-brand-400 hover:text-white px-2 py-1 rounded-lg text-xs font-medium transition-all"
-                          title="Turbo 6-Stream Parallel Download (Fastest)"
+                          title="Download Original Quality"
                         >
-                          <Zap className="w-3.5 h-3.5 text-amber-400" />
-                          <span className="text-[11px]">Turbo</span>
+                          <Download className="w-3.5 h-3.5" />
+                          <span className="text-[11px]">Download</span>
                         </button>
                       )}
 
@@ -333,28 +333,9 @@ export default function MediaGallery({
               />
             </div>
 
-            {/* 6 Parallel Streams Monitor */}
-            {turboStats.streams?.length > 1 && (
-              <div className="space-y-1.5 pt-2">
-                <span className="text-[10px] uppercase font-mono text-slate-500 tracking-wider">
-                  6 Concurrent Active Range Streams
-                </span>
-                <div className="grid grid-cols-6 gap-1.5">
-                  {turboStats.streams.map((s) => (
-                    <div key={s.streamIndex} className="bg-slate-950 p-1.5 rounded border border-slate-800/80 text-center">
-                      <div className="w-full bg-slate-800 h-1 rounded-full overflow-hidden mb-1">
-                        <div className="h-full bg-brand-400" style={{ width: `${s.percent}%` }} />
-                      </div>
-                      <span className="text-[9px] font-mono text-slate-400">S{s.streamIndex}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {turboStats.done && (
               <div className="text-center text-xs text-emerald-400 font-medium flex items-center justify-center gap-1.5 pt-2">
-                <CheckCircle className="w-4 h-4" /> Download Complete (Original Byte Integrity Preserved)
+                <CheckCircle className="w-4 h-4" /> Download Complete (100% Original Quality)
               </div>
             )}
           </div>

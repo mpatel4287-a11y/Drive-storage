@@ -48,7 +48,7 @@ export default function Navbar({
                 className="flex items-center space-x-1.5 bg-brand-600 hover:bg-brand-500 text-white px-3.5 py-1.5 rounded-lg font-medium text-sm transition-all shadow-md shadow-brand-600/20 active:scale-95"
               >
                 <Upload className="w-4 h-4" />
-                <span className="hidden sm:inline">Turbo Upload</span>
+                <span className="hidden sm:inline">Upload Media</span>
               </button>
             )}
 

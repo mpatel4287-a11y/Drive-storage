@@ -125,41 +125,53 @@ def exchange_google_code(
 
 
 def get_google_credentials() -> Credentials:
-    token_json_env = os.getenv("GOOGLE_TOKEN_JSON")
+    token_json_env = os.getenv("GOOGLE_TOKEN_JSON", "").strip()
     if token_json_env:
         try:
             info = json.loads(token_json_env)
             credentials = Credentials.from_authorized_user_info(info, SCOPES)
         except Exception as e:
             raise HTTPException(
-                status_code=500,
-                detail=f"Invalid GOOGLE_TOKEN_JSON environment variable: {e}",
+                status_code=400,
+                detail=f"Google Drive token format invalid: {e}. Please configure GOOGLE_TOKEN_JSON in Render environment.",
             )
     elif TOKEN_FILE.exists():
-        credentials = Credentials.from_authorized_user_file(
-            str(TOKEN_FILE),
-            SCOPES,
-        )
+        try:
+            credentials = Credentials.from_authorized_user_file(
+                str(TOKEN_FILE),
+                SCOPES,
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Failed to read token file: {e}",
+            )
     else:
         raise HTTPException(
-            status_code=401,
-            detail="Google Drive is not connected yet.",
+            status_code=400,
+            detail="Google Drive is not connected yet. Please add GOOGLE_TOKEN_JSON in Render environment or connect Google Drive.",
         )
 
-    if credentials.expired and credentials.refresh_token:
-        credentials.refresh(Request())
-        if TOKEN_FILE.parent.exists():
-            try:
-                TOKEN_FILE.write_text(
-                    credentials.to_json(),
-                    encoding="utf-8",
-                )
-            except Exception:
-                pass
+    try:
+        if credentials.expired and credentials.refresh_token:
+            credentials.refresh(Request())
+            if TOKEN_FILE.parent.exists():
+                try:
+                    TOKEN_FILE.write_text(
+                        credentials.to_json(),
+                        encoding="utf-8",
+                    )
+                except Exception:
+                    pass
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Google Drive authorization expired: {e}. Please re-authenticate Google Drive.",
+        )
 
     if not credentials.valid:
         raise HTTPException(
-            status_code=401,
+            status_code=400,
             detail="Google Drive authorization is invalid.",
         )
 
