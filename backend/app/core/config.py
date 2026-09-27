@@ -18,11 +18,22 @@ class Settings(BaseSettings):
 
     @property
     def normalized_database_url(self) -> str:
+        import urllib.parse
+
         url = self.database_url.strip()
-        if url.startswith("postgres://"):
-            return "postgresql+psycopg://" + url[len("postgres://"):]
-        if url.startswith("postgresql://") and not url.startswith("postgresql+"):
-            return "postgresql+psycopg://" + url[len("postgresql://"):]
+        if "://" in url:
+            scheme, rest = url.split("://", 1)
+            if scheme in ("postgres", "postgresql"):
+                scheme = "postgresql+psycopg"
+            if "@" in rest:
+                userpass, host_part = rest.rsplit("@", 1)
+                if ":" in userpass:
+                    user, pwd = userpass.split(":", 1)
+                    pwd = urllib.parse.unquote(pwd)
+                    pwd = urllib.parse.quote(pwd, safe="")
+                    return f"{scheme}://{user}:{pwd}@{host_part}"
+                return f"{scheme}://{userpass}@{host_part}"
+            return f"{scheme}://{rest}"
         return url
 
     @property
