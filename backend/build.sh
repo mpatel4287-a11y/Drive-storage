@@ -5,7 +5,4 @@ echo "Installing backend dependencies..."
 pip install --upgrade pip
 pip install -r requirements.txt
 
-echo "Applying database migrations..."
-alembic upgrade head
-
-echo "Backend build completed successfully!"
+echo "Build phase complete."
