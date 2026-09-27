@@ -123,7 +123,8 @@ export default function UploadManagerModal({ isOpen, onClose, onUploadFinished, 
     const pending = queue.filter(
       (item) => item.status === "queued" || item.status === "error"
     );
-    const CONCURRENCY = 2; // Optimal concurrency for large videos without network contention
+    // STRICTLY 1 VIDEO AT A TIME: Dedicates full connection bandwidth to that video's 6 parallel parts
+    const CONCURRENCY = 1;
     let index = 0;
 
     const runWorker = async () => {
@@ -144,13 +145,7 @@ export default function UploadManagerModal({ isOpen, onClose, onUploadFinished, 
           await uploadFileTurbo({
             file: item.file,
             folderId: selectedFolder || null,
-            existingUploadUrl: item.uploadUrl || null,
             signal: controller.signal,
-            onSessionCreated: (url) => {
-              setQueue((prev) =>
-                prev.map((q) => (q.id === item.id ? { ...q, uploadUrl: url } : q))
-              );
-            },
             onProgress: (stats) => {
               setQueue((prev) =>
                 prev.map((q) =>
@@ -161,6 +156,7 @@ export default function UploadManagerModal({ isOpen, onClose, onUploadFinished, 
                         speed: stats.speedMBps,
                         eta: stats.etaSeconds,
                         uploadedBytes: stats.uploadedBytes,
+                        streams: stats.streams || [],
                       }
                     : q
                 )
@@ -511,6 +507,31 @@ export default function UploadManagerModal({ isOpen, onClose, onUploadFinished, 
                         style={{ width: `${item.progress}%` }}
                       />
                     </div>
+
+                    {/* 6 Parallel Parts Monitor for active video */}
+                    {item.streams?.length > 1 && item.status === "uploading" && (
+                      <div className="pt-1">
+                        <div className="grid grid-cols-6 gap-1.5">
+                          {item.streams.map((s) => (
+                            <div
+                              key={s.partIndex}
+                              className="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800 text-center"
+                            >
+                              <div className="w-full bg-slate-800 h-1 rounded-full overflow-hidden mb-1">
+                                <div
+                                  className="h-full bg-brand-400 transition-all duration-100"
+                                  style={{ width: `${s.percent}%` }}
+                                />
+                              </div>
+                              <div className="flex items-center justify-between text-[9px] font-mono text-slate-400">
+                                <span>Part {s.partIndex}</span>
+                                <span>{s.percent}%</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Status message */}
                     <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono">
