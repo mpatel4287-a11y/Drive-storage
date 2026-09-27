@@ -68,7 +68,7 @@ def run_migrations_online() -> None:
     """
     connectable = engine_from_config(
     {
-        "sqlalchemy.url": settings.database_url,
+        "sqlalchemy.url": settings.normalized_database_url,
     },
     prefix="sqlalchemy.",
     poolclass=pool.NullPool,

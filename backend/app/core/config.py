@@ -17,6 +17,15 @@ class Settings(BaseSettings):
     environment: str = "production"
 
     @property
+    def normalized_database_url(self) -> str:
+        url = self.database_url.strip()
+        if url.startswith("postgres://"):
+            return "postgresql+psycopg://" + url[len("postgres://"):]
+        if url.startswith("postgresql://") and not url.startswith("postgresql+"):
+            return "postgresql+psycopg://" + url[len("postgresql://"):]
+        return url
+
+    @property
     def cors_origins(self) -> list[str]:
         if self.allowed_origins.strip() == "*":
             return ["*"]
