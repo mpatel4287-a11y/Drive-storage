@@ -1,6 +1,13 @@
 let rawApiBase = import.meta.env.VITE_API_URL || "";
-if (rawApiBase && !rawApiBase.startsWith("http://") && !rawApiBase.startsWith("https://")) {
-  rawApiBase = `https://${rawApiBase}`;
+if (rawApiBase) {
+  if (!rawApiBase.startsWith("http://") && !rawApiBase.startsWith("https://")) {
+    rawApiBase = `https://${rawApiBase}`;
+  }
+  if (!rawApiBase.includes(".") && !rawApiBase.includes("localhost") && !rawApiBase.includes("127.0.0.1")) {
+    rawApiBase = `${rawApiBase}.onrender.com`;
+  }
+} else if (typeof window !== "undefined" && window.location.hostname.includes("onrender.com")) {
+  rawApiBase = "https://drive-storage-api-ix9q.onrender.com";
 }
 export const API_BASE = rawApiBase;
 

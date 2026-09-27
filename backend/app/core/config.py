@@ -5,13 +5,13 @@ class Settings(BaseSettings):
     database_url: str
     jwt_secret_key: str
 
-    smtp_host: str
-    smtp_port: int
-    smtp_username: str
-    smtp_password: str
-    smtp_from_email: str
+    smtp_host: str = "smtp.gmail.com"
+    smtp_port: int = 587
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_from_email: str = ""
 
-    frontend_url: str = "http://localhost:5173"
+    frontend_url: str = "https://drive-storage-portal.onrender.com"
     allowed_origins: str = "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,http://127.0.0.1:3000"
     max_upload_size_bytes: int = 100 * 1024 * 1024 * 1024  # 100 GB maximum
     environment: str = "production"
